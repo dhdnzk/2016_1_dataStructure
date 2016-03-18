@@ -43,15 +43,51 @@ public class SparseMatrix<E> {
     }
 
     public SparseMatrix<E> transpose() {
-        SparseMatrix<E> reversedMatrix = new SparseMatrix(this.rows, this.cols, this.terms.length);
         for(int i = 0; i < this.terms.length; i++ ) {
-            reversedMatrix.terms[i] = this.terms[i];
-            int tmp = reversedMatrix.terms[i].col;
-            reversedMatrix.terms[i].col = reversedMatrix.terms[i].row;
-            reversedMatrix.terms[i].row = tmp;
+
+            Integer tmp = this.getTerms()[i].col;
+            this.getTerms()[i].col = this.getTerms()[i].row;
+            this.getTerms()[i].row = tmp;
+
         }
-        StaticClasses.TermSorting(reversedMatrix);
-        return reversedMatrix;
+        StaticClasses.TermSorting(this);
+        return this;
+    }
+
+    public SparseMatrix<E> transposeFast() {
+
+        int[] rowSize = new int[6];
+        int[] rowStart = new int[6];
+        Integer arr[][] = new Integer[8][3];
+
+        for (int i = 0; i < this.terms.length; i ++ ) {
+            rowSize[this.terms[i].col] ++;
+        }
+
+        for (int i = 0; i < rowStart.length; i ++){
+            if (i == 0) {
+                rowStart[i] = 0;
+            }
+            else {
+                rowStart[i] += rowSize[i-1] + rowStart[i-1];
+            }
+        }
+
+
+        for(int i = 0; i < this.terms.length; i ++ ) {
+            int transposeIdx = rowStart[this.terms[i].col];
+            arr[transposeIdx][0] = this.terms[i].col;
+            arr[transposeIdx][1] = this.terms[i].row;
+            arr[transposeIdx][2] = (Integer) this.terms[i].value;
+            rowStart[this.terms[i].col] ++;
+        }
+
+        for(int i = 0; i < this.terms.length; i ++ ) {
+            this.terms[i].row = arr[i][0];
+            this.terms[i].col = arr[i][1];
+            this.terms[i].value = (E) arr[i][2];
+        }
+        return this;
     }
 
 }
